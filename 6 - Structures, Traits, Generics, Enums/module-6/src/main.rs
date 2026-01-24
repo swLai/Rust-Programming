@@ -38,7 +38,7 @@ fn main() {
     project.add_task(task4);
 
     // Display project overview
-    println!("{}\n", project.summary());
+    println!("{}\n---", project.summary());
     for task in &project.tasks {
         println!("  {}", task.one_line_summary());
     }
@@ -50,13 +50,19 @@ fn main() {
     if let Some(avg) = project.average_estimate() {
         println!("Average per task: {:.1} hours", avg);
     }
+    println!();
 
     // Complete a task
     if let Some(task) = project.find_task_mut(1) {
-        let _ = task.start("Alice");
-        let _ = task.complete("Alice", 3.5);
+        match task.start("Alice") {
+            Ok(_) => println!("Alice started task-{}: {} ({:?},{:?})", task.id, task.title, task.task_type, task.priority),
+            Err(error_message) => println!("Error Message: {error_message}"),
+        }
+        match task.complete("Alice", 3.5) {
+            Ok(_) => println!("Alice completed task-{}: {} ({:?},{:?})", task.id, task.title, task.task_type, task.priority),
+            Err(error_message) => println!("Error Message: {error_message}"),
+        }
     }
-
     println!("\nAfter completing task 1:");
     println!("{}", project.summary());
 
