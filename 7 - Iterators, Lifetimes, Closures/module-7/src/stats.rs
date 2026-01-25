@@ -206,24 +206,6 @@ impl ReadingLevel {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // EXHAUSTIVE MATCHING
-    // -------------------------------------------------------------------------
-    //
-    // When matching on an enum, Rust requires ALL variants to be handled.
-    // If we add a new variant to ReadingLevel, this match will fail to compile
-    // until we add a case for the new variant - this is a compile-time safety feature!
-    // -------------------------------------------------------------------------
-
-    pub fn description(&self) -> &'static str {
-        match self {
-            ReadingLevel::Elementary => "Simple vocabulary, short words",
-            ReadingLevel::Intermediate => "Standard vocabulary",
-            ReadingLevel::Advanced => "Complex vocabulary",
-            ReadingLevel::Expert => "Technical or specialized content",
-            // No _ wildcard needed - we've covered all variants
-        }
-    }
 }
 
 // =============================================================================
@@ -307,8 +289,6 @@ impl TextStats {
 
         let reading_level = ReadingLevel::from_avg_length(avg_word_length);
 
-        // STRUCT INITIALIZATION SHORTHAND
-        // When variable name matches field name, we can omit the field name
         TextStats {
             total_words,
             total_chars,
@@ -317,24 +297,6 @@ impl TextStats {
             shortest_word_len,
             capitalized_count,
             reading_level,
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // MATCH ON SPECIFIC VALUES
-    // -------------------------------------------------------------------------
-
-    pub fn summary(&self) -> String {
-        match self.total_words {
-            0 => String::from("No text to analyze."),
-            1 => format!("Single word text: {} characters.", self.total_chars),
-            // `n` binds the matched value for use in the expression
-            n => format!(
-                "{} words, avg {:.1} chars/word. {}",
-                n,
-                self.avg_word_length,
-                self.reading_level.description()
-            ),
         }
     }
 }
@@ -402,35 +364,6 @@ where
     words.iter().any(|w| predicate(w))
 }
 
-/// Check if all words match a predicate.
-///
-/// ITERATOR METHOD: all()
-/// Returns true if ALL elements satisfy the predicate.
-/// Short-circuits: stops as soon as it finds a non-match.
-///
-/// From Module 7 (Iterators Part 1):
-///   let check = a.iter().all(|&x| x > 0);
-pub fn all_match<F>(words: &[Word], predicate: F) -> bool
-where
-    F: Fn(&Word) -> bool,
-{
-    words.iter().all(|w| predicate(w))
-}
-
-/// Find the first word matching a predicate and return its position.
-///
-/// ITERATOR METHOD: position()
-/// Returns Some(index) of first matching element, or None.
-///
-/// From Module 7 (Iterators Part 1):
-///   let check = a.iter().position(|&x| x > 4);
-pub fn find_position<F>(words: &[Word], predicate: F) -> Option<usize>
-where
-    F: Fn(&Word) -> bool,
-{
-    words.iter().position(|w| predicate(w))
-}
-
 /// Collect words matching a predicate into a new Vec.
 ///
 /// ITERATOR CHAIN: filter() + collect()
@@ -444,20 +377,6 @@ where
     F: Fn(&Word) -> bool,
 {
     words.iter().filter(|w| predicate(w)).collect()
-}
-
-/// Transform word texts using a closure, collecting results.
-///
-/// ITERATOR CHAIN: map() + collect()
-/// - map() transforms each element using the closure
-/// - collect() gathers results into a Vec<String>
-///
-/// The closure takes &str and returns String (owned data).
-pub fn transform_texts<F>(words: &[Word], transformer: F) -> Vec<String>
-where
-    F: Fn(&str) -> String,
-{
-    words.iter().map(|w| transformer(w.text)).collect()
 }
 
 /// Partition words into two groups based on a predicate.
@@ -476,43 +395,6 @@ where
     F: Fn(&Word) -> bool,
 {
     words.iter().partition(|w| predicate(w))
-}
-
-// =============================================================================
-// LET-ELSE PATTERN
-// =============================================================================
-//
-// The `let ... else { return }` pattern is a concise way to:
-// 1. Try to destructure/match a value
-// 2. If it fails, execute the else block (which must diverge: return, break, etc.)
-//
-// This is cleaner than:
-//   let max_len = match words.iter().map(|w| w.len()).max() {
-//       Some(len) => len,
-//       None => return Vec::new(),
-//   };
-// =============================================================================
-
-/// Calculate word frequency by length, returns (length, count) pairs.
-pub fn length_distribution(words: &[Word]) -> Vec<(usize, usize)> {
-    // LET-ELSE PATTERN
-    // If max() returns None (empty iterator), execute the else block
-    let Some(max_len) = words.iter().map(|w| w.len()).max() else {
-        return Vec::new();
-    };
-
-    // RANGE ITERATOR + ITERATOR CHAIN
-    // (1..=max_len) creates an iterator from 1 to max_len (inclusive)
-    // .map() transforms each length to a (length, count) tuple
-    // .filter() keeps only tuples where count > 0
-    // .collect() gathers into a Vec
-    (1..=max_len)
-        .map(|len| {
-            let count = words.iter().filter(|w| w.len() == len).count();
-            (len, count)
-        })
-        .filter(|(_, count)| *count > 0)
-        .collect()
 }
 
 // =============================================================================
