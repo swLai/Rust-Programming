@@ -1,0 +1,13 @@
+[package]
+name = "module-8"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name"]
+description = "A demonstration of Rust's module system"
+license = "MIT"
+
+# External dependencies from crates.io
+# To add a crate: cargo add <crate_name>
+# Or manually add it here and run: cargo build
+[dependencies]
+chrono = "0.4"  # Date/time library - demonstrates external crate usage
