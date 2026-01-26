@@ -231,6 +231,13 @@ crate (module_8)
 └── Library                 [pub struct - defined in lib.rs]
 ```
 
+You can also use the following commands to generate it in console:
+
+```bash
+$ cargo install cargo-modules
+$ cargo-modules structure --lib
+```
+
 ## Key Takeaways
 
 1. **Use file-based modules** for most code organization
